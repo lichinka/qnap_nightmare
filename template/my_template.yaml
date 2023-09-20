@@ -1,3 +1,13 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: expressjs-template
+  title: Express.js Template
+  description: Creates a an Expressjs app for the StageCentral Workshop
+
+
+
+
 metadata:
   name: exercise-template
   title: Exercise template
@@ -21,10 +31,17 @@ spec:
           ui:autofocus: true
           ui:options:
             rows: 3
-        type:
-          title: Type
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
           type: string
-          description: The type of this component
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
 
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
@@ -34,4 +51,54 @@ spec:
       name: Send Output
       action: debug:log
       input:
-        message: These are the values <${{ parameters.name }}, ${{ parameters.type }}>
+        message: These are the values <${{ parameters.name }}, ${{ parameters.repoUrl }}>
+
+    - id: fetch-template
+      name: Fetch Template Repo
+      action: fetch:template
+      input:
+        url: ./express
+        #this defines that only .njk files will be templated
+        templateFileExtension: true
+        values:
+          name: ${{ parameters.name }}
+
+    - id: write-catalog-info
+      name: Write Catalog Info
+      action: catalog-write
+      input:
+        entity:
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            name: ${{ parameters.name }}
+            namespace: default
+            description: The ${{ parameters.name }} service
+          spec:
+            type: app
+            lifecycle: production
+            owner: group:guests
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
+
