@@ -23,6 +23,7 @@ spec:
           ui:autofocus: true
           ui:options:
             rows: 3
+
     - title: Choose a location
       required:
         - repoUrl
@@ -38,7 +39,7 @@ spec:
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
   steps:
-    # Each step executes an action, in this case one templates files into the working directory.
+    # Each step executes an action
     - id: send-output
       name: Send Output
       action: debug:log
