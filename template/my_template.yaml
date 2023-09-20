@@ -1,0 +1,37 @@
+metadata:
+  name: exercise-template
+  title: Exercise template
+  description: Exercise template for the workshop
+
+spec:
+  owner: user:guest
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Complete the information below
+      required:
+        - name
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:autofocus: true
+          ui:options:
+            rows: 3
+        type:
+          title: Type
+          type: string
+          description: The type of this component
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: send-output
+      name: Send Output
+      action: debug:log
+      input:
+        message: These are the values <${{ parameters.name }}, ${{ parameters.type }}>
